@@ -1,0 +1,182 @@
+This is a pseudocode, made by myself, just to plan the logic behind the application:
+
+FROM MOTOROLA IMPORT MIC
+FROM MOTOROLA IMPORT FONE
+
+INICIAR{
+	BOTAO.DETECT.CENTRO.ESCREVER("DETECTAR")
+
+	IF(BOTAO.DETECT.CENTRO){
+		RUN F.LER
+		RUN F.ANALISE
+		CHECK = true
+	}
+	IF(CHECK){
+		BAR.VALUE.RANGE(FONE.VOL.MIN, FONE.VOL.MAX)
+		BOTAO.DETECT.CENTRO.ESCREVER("ATIVAR")
+		BOTAO.DETECT.CENTRO.COR(VERDINHO)
+		IF(BOTAO.DETECT.CENTRO){
+			RUN F.SAIDA
+		}
+	}
+}
+
+F.LER{
+	ARRAY FREQ[1980]
+	MIC = 1
+	MIC.FILTRO.AMPDB.RANGE(45, NULL)
+	FOR(INT CONT = 0; CONT < 1980; CONT++){
+		ARRAY FREQ[CONT] = MIC.FREQ.VALUE / 4
+		WAIT 2 * 10^-3
+	}
+	RET ARRAY FREQ
+}
+
+F.ANALISE{
+	INT A = 0
+	FOR(INT CONT = 0; CONT < 1980; CONT++){
+		A += ARRAY FREQ[CONT]
+	}
+	FLOAT MEDIA = A / 1980
+	FLOAT MIN = ARRAY FREQ[0]
+	FLOAT MAX = 0
+	FOR(INT CONT = 0; CONT < 1980; CONT++){
+		IF(ARRAY FREQ[CONT] > MAX && ARRAY FREQ[CONT] > MEDIA){
+		 	MAX = ARRAY FREQ[CONT] 
+		}
+			IF(ARRAY FREQ[CONT] < MIN && ARRAY FREQ[CONT] > MEDIA){
+			MIN = ARRAY FREQ[CONT]
+		}
+	}
+	RET MIN, MAX
+}
+
+F.SAIDA{
+	MIC = 1
+	WHILE(APP.RUNNING){
+		FONE.VOL.VALUE = BAR.VALUE
+		IF(MIC.FREQ.VALUE < MAX && MIC.FREQ.VALUE > MIN){
+			FONE = 1
+			FONE.FREQ.VALUE = MIC.FREQ.VALUE
+		} ELSE {
+			FONE = 0
+		}
+	}
+} 
+
+there are a bunch of portuguese words because i wasen't intirelly fucused on this (my football team was playing)
+besides this i was feeling great after doing this, it was my first time making a pseudocode this big, I named it "JavaSchizo"
+
+so I decided to ask chatgpt(aka gepeto) how does it looks like in real JS and they returned me this: 
+
+// Importar os módulos necessários
+const MIC = require('motorola').MIC;
+const FONE = require('motorola').FONE;
+
+// Função principal
+function iniciar() {
+  const botaoDetectar = {
+    centro: {
+      escrever: function(texto) {
+        console.log(texto);
+      }
+    }
+  };
+
+  let check = false;
+
+  // Detectar botão central pressionado
+  if (botaoDetectar.centro) {
+    const freq = ler();
+    const { min, max } = analisar(freq);
+    check = true;
+  }
+
+  // Verificar se a função de análise foi executada com sucesso
+  if (check) {
+    const bar = {
+      value: {
+        range: function(min, max) {
+          console.log(`Definir intervalo: ${min} - ${max}`);
+        }
+      }
+    };
+
+    botaoDetectar.centro.escrever('ATIVAR');
+    botaoDetectar.centro.cor('VERDINHO');
+
+    // Verificar se o botão central foi pressionado novamente
+    if (botaoDetectar.centro) {
+      saida();
+    }
+  }
+}
+
+// Função para ler as frequências do microfone
+function ler() {
+  const freq = [];
+
+  const mic = new MIC();
+  mic.filtro.ampdb.range(45, null);
+
+  for (let cont = 0; cont < 1980; cont++) {
+    freq[cont] = mic.freq.value / 4;
+    wait(2 * 10 ** -3);
+  }
+
+  return freq;
+}
+
+// Função para analisar as frequências
+function analisar(freq) {
+  let a = 0;
+
+  for (let cont = 0; cont < 1980; cont++) {
+    a += freq[cont];
+  }
+
+  const media = a / 1980;
+  let min = freq[0];
+  let max = 0;
+
+  for (let cont = 0; cont < 1980; cont++) {
+    if (freq[cont] > max && freq[cont] > media) {
+      max = freq[cont];
+    }
+    if (freq[cont] < min && freq[cont] > media) {
+      min = freq[cont];
+    }
+  }
+
+  return { min, max };
+}
+
+// Função para saída de áudio
+function saida() {
+  const mic = new MIC();
+  const fone = new FONE();
+
+  while (app.running) {
+    fone.vol.value = bar.value;
+    if (mic.freq.value < max && mic.freq.value > min) {
+      fone = 1;
+      fone.freq.value = mic.freq.value;
+    } else {
+      fone = 0;
+    }
+  }
+}
+
+// Função de pausa em milissegundos
+function wait(ms) {
+  const start = Date.now();
+  let now = start;
+  while (now - start < ms) {
+    now = Date.now();
+  }
+}
+
+// Executar a função principal
+iniciar();
+
+Now I going to stude JS sintaxes so i can make it real
